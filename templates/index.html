@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>FOOTBALL AI ANALYZER — Match Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="ambient ambient-one"></div><div class="ambient ambient-two"></div><div class="ambient ambient-three"></div><div class="pitch-lines"></div>
+<div class="shell">
+  <header class="topbar"><a class="brand" href="#top"><div class="brand-mark">⚽</div><div><div class="brand-name">FOOTBALL <span>AI</span></div><div class="brand-sub">MATCH INTELLIGENCE / DATA FIRST</div></div></a><div class="status"><i id="statusDot"></i><span id="statusText">جارٍ فحص مصدر البيانات</span></div></header>
+  <section class="hero" id="top"><div class="hero-copy"><div class="eyebrow"><span class="live-pulse"></span> منصة تحليل كرة القدم</div><h1>افهم المباراة<br><span>قبل صافرة البداية.</span></h1><p>قارن الفورمة والأهداف، افحص أسواق الأهداف والنتيجة، وشاهد كيف وصل النموذج إلى تقديره — مع توضيح حدود البيانات.</p><div class="hero-tags"><span>01 / FORM</span><span>02 / GOALS</span><span>03 / PROBABILITIES</span></div></div><div class="hero-visual"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="hero-ball">⚽</div><div class="hero-chip chip-top">DATA · FORM · MODEL</div><div class="hero-chip chip-bottom">NO GUARANTEES / JUST ESTIMATES</div></div></section>
+  <section class="panel match-panel"><div class="section-head"><div><span class="step">01 / MATCH INPUT</span><h2>حدد المواجهة</h2><p class="section-desc">الفريق الأول يُعامل كصاحب الأرض والثاني كضيف في النموذج.</p></div><span class="pill">تحليل قبل المباراة</span></div>
+    <div class="match-grid">
+      <div class="team-field"><label>الفريق الأول <small>صاحب الأرض</small></label><div class="search-wrap"><input id="teamAInput" placeholder="اكتب اسم النادي بالعربية أو الإنجليزية، حتى لو جزءاً منه..." autocomplete="off"><button class="search-btn" onclick="searchTeam('A')">بحث</button></div><div id="teamAResults" class="results"></div><div id="teamASelected" class="selected">لم يتم اختيار فريق</div></div>
+      <div class="versus"><span>VS</span><i></i></div>
+      <div class="team-field"><label>الفريق الثاني <small>خارج الأرض</small></label><div class="search-wrap"><input id="teamBInput" placeholder="اكتب اسم النادي بالعربية أو الإنجليزية، حتى لو جزءاً منه..." autocomplete="off"><button class="search-btn" onclick="searchTeam('B')">بحث</button></div><div id="teamBResults" class="results"></div><div id="teamBSelected" class="selected">لم يتم اختيار فريق</div></div>
+    </div>
+    <div class="options-row"><div><label for="season">الموسم (اختياري)</label><input id="season" type="number" placeholder="مثلاً 2026" min="2000" max="2100"></div><div class="hint">يستخدم التقرير آخر خمس مباريات مكتملة متاحة لكل فريق. لا تختَر الفريقين يدوياً من النص؛ اخترهما من نتائج البحث.</div></div>
+    <button id="analyzeBtn" class="primary" onclick="runAnalysis()"><span>✦</span> ابدأ التحليل الشامل <b>←</b></button>
+    <button id="matchCenterBtn" class="match-center-trigger" onclick="loadMatchCenter()">◉ موعد المباراة والمتابعة المباشرة</button>
+    <div id="errorBox" class="error hidden"></div>
+  </section>
+  <section id="matchCenterPanel" class="panel match-center hidden">
+    <div class="section-head"><div><span class="step">LIVE MATCH CENTER</span><h2>مركز المباراة المباشر</h2><p class="section-desc">العدّ التنازلي قبل البداية، والنتيجة والأحداث أثناء اللعب من Highlightly.</p></div><span id="mcBadge" class="pill">بانتظار اختيار المباراة</span></div>
+    <div class="mc-scoreboard">
+      <div class="mc-team"><img id="mcHomeLogo" alt=""/><strong id="mcHomeName">صاحب الأرض</strong><small>HOME</small></div>
+      <div class="mc-middle"><span id="mcStatus">—</span><strong id="mcScore">VS</strong><b id="mcClock">—</b><small id="mcKickoff">—</small></div>
+      <div class="mc-team"><img id="mcAwayLogo" alt=""/><strong id="mcAwayName">الضيف</strong><small>AWAY</small></div>
+    </div>
+    <div class="mc-timer-wrap"><span id="mcTimerLabel">الوقت المتبقي لبداية المباراة</span><strong id="mcTimer">—</strong><small id="mcTimerHint">يظهر الموعد حسب توقيت جهازك</small></div>
+    <div class="mc-events-head"><h3>أحداث المباراة</h3><button class="outline" id="mcRefreshBtn" onclick="refreshMatchCenter(true)">تحديث الآن ↻</button></div>
+    <div id="mcEvents" class="mc-events"><div class="selected">اختر الفريقين ثم اضغط على متابعة المباراة.</div></div>
+    <div class="mc-footnote" id="mcFootnote">تُحدّث الأحداث دورياً. قائمة Highlightly الحالية لا تتضمن التسلل أو الإصابة كحدثين مستقلين؛ لذلك لن نعرضهما إلا إذا أرسلهما المزود ضمن بيانات المباراة.</div>
+  </section>
+
+  <section id="report" class="hidden">
+    <div class="report-head"><div><span class="step">02 / ANALYSIS REPORT</span><h2>تقرير المواجهة</h2><p id="generatedAt" class="muted"></p></div><button class="outline" onclick="window.print()">طباعة التقرير ⎙</button></div>
+    <div id="summaryCards" class="summary-grid"></div>
+    <div class="panel model-panel"><div class="section-head"><div><span class="step">MODEL OUTPUT</span><h3>من يملك الأفضلية؟</h3></div><span class="pill amber">تقدير إحصائي</span></div><div id="modelBox"></div><div id="predictionHero"></div></div>
+    <div class="panel betting-panel"><div class="section-head"><div><span class="step">MARKET PROBABILITIES</span><h3>احتمالات أسواق المباراة</h3><p class="section-desc">200 سوق للمقارنة؛ الاحتمالات تقديرات نموذجية وليست أسعار مراهنات فعلية.</p></div><span class="pill">200 سوقاً واحتمالاً</span></div><div id="bettingPanel"></div></div>
+    <div class="panel"><div class="section-head"><div><span class="step">WHY THIS ESTIMATE?</span><h3>لماذا رجّح النموذج هذه القراءة؟</h3></div></div><div id="reasoningPanel" class="reason-grid"></div></div>
+    <div class="panel"><div class="section-head"><div><span class="step">TEAM COMPARISON</span><h3>مقارنة الفريقين</h3></div></div><div id="comparison"></div></div>
+    <div class="panel"><div class="section-head"><div><span class="step">ANALYSIS METRICS</span><h3>تفاصيل المؤشرات</h3><p class="section-desc">30 مؤشراً إضافياً مشتقة من نفس عينة آخر خمس مباريات؛ لا تعني زيادة عدد المباريات.</p></div></div><div id="analysisPoints" class="points-grid"></div></div>
+    <div class="panel"><div class="section-head"><div><span class="step">RECENT FORM</span><h3>آخر المباريات المكتملة</h3></div></div><div id="recentMatches" class="recent-grid"></div></div>
+    <div id="warnings" class="warning-list"></div>
+  </section>
+  <section class="panel modules"><div class="section-head"><div><span class="step">ANALYSIS ENGINE</span><h2>ماذا يفحص النظام؟</h2><p class="section-desc">بعض المؤشرات تعتمد على تغطية المزود وقد تظهر غير متاحة عند نقص البيانات.</p></div><span class="pill green">74 معياراً مدرجاً</span></div><div id="moduleList" class="module-grid"></div></section>
+  <footer>FOOTBALL AI ANALYZER <span>•</span> أداة تحليل احتمالي للتثقيف فقط. لا تضمن النتائج ولا تعرف الأسعار الحقيقية لشركات المراهنات.</footer>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body></html>
